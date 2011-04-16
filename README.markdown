@@ -1,0 +1,1 @@
+Inspired by this weekend project which I came across on HN: [tech3some] (http://www.tech3some.com)

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Yahoo Finance</title>
+    <link rel="stylesheet" media="screen" href="screen.css"/>
+    <link rel="stylesheet" media="screen" href="style.css"/>   
+</head>
+
+<body>
+    
+    <div class="container">
+        <div id="top" class="span-24">
+            <img id="spinner" src="spinner.gif" style="position:absolute; bottom:20px; left:0" />
+        </div>
+        
+            <div id="aapl" class="span-8 border">
+                <h1 class="aapl">Apple</h1>
+                <div class="headline">
+                    
+                </div>
+            </div>
+            <div id="goog" class="span-8 border">
+                <h1 class="goog"> Google </h1>
+                 <div class="headline">
+                    
+                </div>
+            </div>
+            <div id="msft" class="span-8 last">
+                <h1 class="msft"> Microsoft </h1>
+                 <div class="headline">
+                    
+                </div>
+            </div>
+        
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            
+            $("#spinner").hide();
+            
+                $("#spinner").show();
+                $('input[type=button]').hide();
+                
+                var addStock = function(stock, address){
+                    $('<h2>'+stock+'</h2>').insertAfter(address);
+                }
+                
+                var parseHeadline = function(heading, company){
+                    var title = heading.content.replace(/\n{2,}/,"").replace(/\s{2,100}/," ").replace(/\s{2,}/," ");                    
+                    var whereToAdd = '' +'#' + company + ' div.headline'+ '';                    
+                    $('<h3><a target="_blank" href="'+heading.href+'">'+title+'</a></h3>').appendTo(whereToAdd);
+                }
+                
+                var companyStock = function(company){
+                    
+                    var baseQueryStock = 'select * from html where url="http://finance.yahoo.com/q?s=';
+                    var queryStock = baseQueryStock + company + '" and xpath=\'//span[@id="yfs_l10_' + company + '"]\'';
+                    
+                    var baseQueryHeadline = 'select * from html where url="http://finance.yahoo.com/q?s=';
+                    var queryHeadline = baseQueryHeadline + company + '" and xpath=\'//div[@id="yfi_headlines"]/div[2]/ul/li/a\'';
+                    
+                    var whereToAddStock = '' + '#' + company + ' h1';
+                    
+                    $.ajax({
+                        url:'http://query.yahooapis.com/v1/public/yql',
+                        jsonp: 'callback',
+                        dataType: 'jsonp',
+                        data: {
+                            //q: 'select * from html where url="http://finance.yahoo.com/q?s=aapl" and xpath=\'//span[@id="yfs_l10_aapl"]\'',
+                            q: queryStock,
+                            format : 'json'
+                        },
+                        success: function(response) {
+                            console.log(whereToAddStock);
+                            addStock(response.query.results.span[0].content, whereToAddStock);
+                        },
+                        complete: function() {
+                            $("#spinner").hide();            
+                        },
+                        error : function(){
+                            console.log("error in retrieving response from Yahoo!");
+                        }
+                    });
+                    
+                     $.ajax({
+                        url:'http://query.yahooapis.com/v1/public/yql',
+                        jsonp: 'callback',
+                        dataType: 'jsonp',
+                        data: {
+                            //q: 'select * from html where url="http://finance.yahoo.com/q?s=aapl" and xpath=\'//div[@id="yfi_headlines"]/div[2]/ul/li/a\'',
+                            q: queryHeadline,
+                            format : 'json'
+                        },
+                        success: function(response) {
+                            for (var i=0;i<10;i++){
+                                parseHeadline(response.query.results.a[i],company);
+                            }
+                        },
+                        complete: function() {
+                            $("#spinner").hide();            
+                        }
+                    });
+                }
+                companyStock("aapl");
+                companyStock("goog");
+                companyStock("msft");
+                //companyStock("amzn");
+                       
+        });
+    </script>
+    
+</body>
+
+</html>
